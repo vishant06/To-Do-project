@@ -1,83 +1,132 @@
-import React from "react";
-import { useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
-
+import React, { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 const Home = () => {
+  const [todo, setTodo] = useState("");
+  const [todos, setTodos] = useState([]);
 
-  const [todo, setTodo] = useState("")
-  const [todos, setTodos] = useState([])
+  useEffect(() => {
+    const savedTodos = localStorage.getItem("todos");
+    if (savedTodos) {
+      setTodos(JSON.parse(savedTodos));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
 
   const handleAdd = () => {
-    setTodos([...todos, { id: uuidv4(), todo, isComplete: false }])
-    setTodo("")
-    
-  }
-  const handleEdit = () => {
+    if (!todo.trim()) return;
 
-  }
-  const handleDelete = () => {
+    setTodos([...todos, { id: uuidv4(), todo, isCompleted: false }]);
+    setTodo("");
+  };
 
-  }
-  const handleChange = (e) => {
-    setTodo(e.target.value)
+  const handleEdit = (id) => {
+    const item = todos.find((i) => i.id === id);
+    setTodo(item.todo);
+    setTodos(todos.filter((i) => i.id !== id));
+  };
 
-  }
-  const handleCheckbox = (e) => {
-    let id = e.target.name;
-    let Index = todos.findIndex(item => 
-      {return item.id === id});
+  const handleDelete = (id) => {
+    setTodos(todos.filter((item) => item.id !== id));
+  };
 
-      let newTodos = todos;
-      newTodos[Index].isCompleted = ! newTodos[Index].isCompleted;
-      setTodos(newTodos);
+  const handleCheckbox = (id) => {
+    setTodos(
+      todos.map((item) =>
+        item.id === id
+          ? { ...item, isCompleted: !item.isCompleted }
+          : item
+      )
+    );
+  };
 
-  }
-  
-
+  const handleClearAll = () => {
+    localStorage.removeItem("todos");
+    setTodos([]);
+  };
 
   return (
-    <main className="bg-gray-300 m-8 min-h-[80vh] p-0 rounded-2xl w-[50vw] mx-auto overflow-hidden">
-      <h1 className="font-bold text-3xl flex  justify-center p-6 bg-slate-700  text-white m-0">
-        To-Do List
-      </h1>
-      <div className="main flex flex-col w-full justify-center my-7">
+    <main className="bg-gray-300 min-h-[80vh] rounded-2xl w-full max-w-[900px] mx-2 sm:mx-6 md:mx-auto mt-6 overflow-hidden">
+      
+<h1 className="font-bold text-xl sm:text-2xl md:text-3xl flex justify-center p-4 sm:p-6 bg-slate-700 text-white w-full block">
+  To-Do List
+</h1>
+
+      <div className="flex flex-col px-3 sm:px-5w-full justify-center my-6">
         <input
-        onChange={handleChange} 
-        onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      handleAdd();
-    }
-  }} value={todo}
-          className="bg-white rounded-xl p-2 m-auto w-[80%]"
+          value={todo}
+          onChange={(e) => setTodo(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          className="bg-white rounded-xl p-2 m-auto w-full sm:w-[80%]"
           type="text"
           placeholder="Add todo"
         />
-        <button onClick={handleAdd} className="bg-slate-700 text-white p-1 w-[10%]  rounded-xl mx-[10.5%] my-3 hover:cursor-pointer">
-          Add Task
-        </button>
-      </div>
-      <h2 className="font-bold text-xl pb-2 mx-21">Your Todos</h2>
-      
-      <div className="todos flex flex-col justify-between px-2 w-[80%] m-auto">
-       { todos.map(item =>{
-        return <div className="todo flex my-2 gap-2  ">
-            <input type="checkbox" onChange={handleCheckbox} value={todo.isCompleted} name={todo.id} id="" />
-        <div className={`todo-text w-full px-4 ${item.isCompleted ? "line-through" : ""}`}>{item.todo}</div>
- 
-        <div className="buttons flex gap-3">
-          <button onClick={handleEdit} className="edit bg-slate-700 text-white px-3 w-auto  rounded-xl hover:cursor-pointer">
-            Edit
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mx-auto w-full sm:w-[80%] my-3">
+          <button
+            onClick={handleAdd}
+            className="bg-slate-700 text-white px-4 py-2 sm:py-1 rounded-xl w-full sm:w-auto"
+          >
+            Add Task
           </button>
-          <button onClick={handleDelete} className="delete bg-slate-700 text-white px-3 w-auto  rounded-xl hover:cursor-pointer">
-            Delete
+
+          <button
+            onClick={handleClearAll}
+            className="bg-red-600 text-white px-4 py-2 sm:py-1 rounded-xl w-full sm:w-auto"
+          >
+            Clear All
           </button>
-          </div>
         </div>
-          })}
       </div>
 
-    
+      <h2 className="font-bold p-4 text-lg sm:text-xl pb-2 w-full sm:w-[80%] mx-auto">
+        Your Todos
+      </h2>
+
+      <div className="flex flex-col w-full sm:w-[80%] mx-auto p-5 max-h-[300px] overflow-y-auto pr-1">
+        {todos.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-col sm:flex-row my-2 gap-2 sm:gap-3 sm:items-center"
+          >
+            
+            <div className="flex items-center gap-2 w-full">
+              <input
+                type="checkbox"
+                checked={item.isCompleted}
+                onChange={() => handleCheckbox(item.id)}
+              />
+
+              <div
+                className={`w-full px-2 sm:px-4 break-words ${
+                  item.isCompleted ? "line-through text-gray-500" : ""
+                }`}
+              >
+                {item.todo}
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end sm:justify-start">
+              <button
+                onClick={() => handleEdit(item.id)}
+                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm sm:text-base"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDelete(item.id)}
+                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm sm:text-base"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </main>
   );
 };
