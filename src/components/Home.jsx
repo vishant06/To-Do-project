@@ -19,12 +19,17 @@ const Home = () => {
   const handleAdd = () => {
     if (!todo.trim()) return;
 
-    setTodos([...todos, { id: uuidv4(), todo, isCompleted: false }]);
+    setTodos([
+      ...todos,
+      { id: uuidv4(), todo: todo.trim(), isCompleted: false },
+    ]);
     setTodo("");
   };
 
   const handleEdit = (id) => {
     const item = todos.find((i) => i.id === id);
+    if (!item) return;
+
     setTodo(item.todo);
     setTodos(todos.filter((i) => i.id !== id));
   };
@@ -44,18 +49,18 @@ const Home = () => {
   };
 
   const handleClearAll = () => {
+    if (!window.confirm("Are you sure you want to delete all todos?")) return;
     localStorage.removeItem("todos");
     setTodos([]);
   };
 
   return (
-    <main className="bg-gray-300 min-h-[80vh] rounded-2xl w-full max-w-[900px] mx-2 sm:mx-6 md:mx-auto mt-6 overflow-hidden">
-      
-<h1 className="font-bold text-xl sm:text-2xl md:text-3xl flex justify-center p-4 sm:p-6 bg-slate-700 text-white w-full block">
-  To-Do List
-</h1>
+    <main className="bg-gray-300 min-h-[85vh] rounded-2xl w-[96%] max-w-[900px] mx-[2%] sm:mx-6 md:mx-auto mt-6 overflow-hidden">
+      <h1 className="font-bold text-xl sm:text-2xl md:text-3xl flex justify-center p-4 sm:p-6 bg-slate-700 text-white w-full">
+        To-Do List
+      </h1>
 
-      <div className="flex flex-col px-3 sm:px-5w-full justify-center my-6">
+      <div className="flex flex-col px-3 sm:px-5 w-full justify-center my-6">
         <input
           value={todo}
           onChange={(e) => setTodo(e.target.value)}
@@ -68,7 +73,8 @@ const Home = () => {
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mx-auto w-full sm:w-[80%] my-3">
           <button
             onClick={handleAdd}
-            className="bg-slate-700 text-white px-4 py-2 sm:py-1 rounded-xl w-full sm:w-auto"
+            disabled={!todo.trim()}
+            className="bg-slate-700 text-white px-4 py-2 sm:py-1 rounded-xl w-full sm:w-auto "
           >
             Add Task
           </button>
@@ -82,18 +88,23 @@ const Home = () => {
         </div>
       </div>
 
-      <h2 className="font-bold p-4 text-lg sm:text-xl pb-2 w-full sm:w-[80%] mx-auto">
+      <h2 className="font-bold px-4 text-lg sm:text-xl pb-2 w-full sm:w-[80%] mx-auto">
         Your Todos
       </h2>
 
-      <div className="flex flex-col w-full sm:w-[80%] mx-auto p-5 max-h-[300px] overflow-y-auto pr-1">
+      <div className="flex flex-col w-full sm:w-[80%] mx-auto p-5 max-h-[300px] overflow-y-auto scroll-smooth no-scrollbar ">
+        {todos.length === 0 && (
+          <div className="text-gray-500 text-center py-4">
+            No todos available.
+          </div>
+        )}
+
         {todos.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col sm:flex-row my-2 gap-2 sm:gap-3 sm:items-center"
+            className="flex justify-between items-center my-2 gap-2"
           >
-            
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <input
                 type="checkbox"
                 checked={item.isCompleted}
@@ -101,7 +112,7 @@ const Home = () => {
               />
 
               <div
-                className={`w-full px-2 sm:px-4 break-words ${
+                className={`truncate ${
                   item.isCompleted ? "line-through text-gray-500" : ""
                 }`}
               >
@@ -109,17 +120,17 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 justify-end sm:justify-start">
+            <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={() => handleEdit(item.id)}
-                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm sm:text-base"
+                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm"
               >
                 Edit
               </button>
 
               <button
                 onClick={() => handleDelete(item.id)}
-                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm sm:text-base"
+                className="bg-slate-700 text-white px-3 py-1 rounded-xl text-sm"
               >
                 Delete
               </button>
